@@ -4,10 +4,16 @@
 
 :root {
   --foreground-rgb: 256, 256, 256;
-  --background-hex: #111827;
+  --background-top: #111827;
+  --background-middle: #151f34;
+  --background-bottom: #28256b; /* 4F46E5 */
+}
+
+html {
+  height: 100%;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: var(--background-hex);
+  background: linear-gradient(-30deg, var(--background-bottom) 0%, var(--background-middle) 35%, var(--background-top) 100%);
 }

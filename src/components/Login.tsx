@@ -2,6 +2,7 @@
 
 import { useForm, SubmitHandler } from "react-hook-form";
 import { pb } from "@/lib/pocketbase";
+import { useRouter } from "next/navigation";
 
 type FormValues = {
   username: string;
@@ -9,6 +10,7 @@ type FormValues = {
 };
 
 function Login() {
+  const router = useRouter();
   const { register, handleSubmit } = useForm<FormValues>();
 
   const handleLogin: SubmitHandler<FormValues> = (data) => {
@@ -17,7 +19,7 @@ function Login() {
       .authWithPassword(data.username, data.password)
       .then((res) => {
         document.cookie = pb.authStore.exportToCookie({ httpOnly: false });
-        console.log(document.cookie);
+        router.push("/");
       })
       .catch((e) => {
         console.error(e);
@@ -36,8 +38,8 @@ function Login() {
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
           <form className="space-y-6" onSubmit={handleSubmit(handleLogin)}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium leading-6 text-white">
-                Email address
+              <label htmlFor="username" className="block text-sm font-medium leading-6 text-white">
+                Username
               </label>
               <div className="mt-2">
                 <input
