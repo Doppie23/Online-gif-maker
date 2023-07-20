@@ -3,6 +3,8 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { pb } from "@/lib/pocketbase";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { ClientResponseError } from "pocketbase";
 
 type FormValues = {
   username: string;
@@ -10,6 +12,7 @@ type FormValues = {
 };
 
 function Login() {
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
   const { register, handleSubmit } = useForm<FormValues>();
 
@@ -21,8 +24,13 @@ function Login() {
         document.cookie = pb.authStore.exportToCookie({ httpOnly: false });
         router.push("/");
       })
-      .catch((e) => {
-        console.error(e);
+      .catch((res: ClientResponseError) => {
+        if (res.status === 400) {
+          setErrorMessage("Credentials not correct.");
+        } else {
+          setErrorMessage("Something went wrong. Please try again.");
+          console.error(res.message);
+        }
       });
   };
 
@@ -66,14 +74,6 @@ function Login() {
                 >
                   Password
                 </label>
-                <div className="text-sm">
-                  <a
-                    href="#"
-                    className="font-semibold text-indigo-600 hover:text-indigo-500"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
               </div>
               <div className="mt-2">
                 <input
@@ -97,6 +97,11 @@ function Login() {
               </button>
             </div>
           </form>
+          {errorMessage && (
+            <div className="mt-3 text-sm font-semibold text-red-500">
+              {errorMessage}
+            </div>
+          )}
         </div>
       </div>
     </>
