@@ -7,13 +7,15 @@ function HomeTest() {
   return (
     <div>
       <div
-        onClick={() => {
+        onClick={async () => {
           const data = {
             user: pb.authStore.model?.id,
             testInput: "test",
           };
 
-          pb.collection("test").create(data);
+          const res = await pb.collection("test").create(data);
+          // const res = await pb.collection("test").delete("p26o6cik97demtk");
+          console.log(res);
         }}
       >
         home
