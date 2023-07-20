@@ -17,7 +17,9 @@ function HomeTest() {
       >
         home
       </div>
-      <LogoutButton />
+      <div className="absolute top-0 right-0 m-3">
+        <LogoutButton />
+      </div>
     </div>
   );
 }
