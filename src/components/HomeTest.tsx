@@ -8,16 +8,17 @@ function HomeTest() {
     <div>
       <div
         onClick={() => {
-          pb.collection("test")
-            .getOne("0i9rmf14t9hdvue")
-            .then((e) => {
-              console.log(e);
-            });
+          const data = {
+            user: pb.authStore.model?.id,
+            testInput: "test",
+          };
+
+          pb.collection("test").create(data);
         }}
       >
         home
       </div>
-      <div className="absolute top-0 right-0 m-3">
+      <div className="absolute right-0 top-0 m-3">
         <LogoutButton />
       </div>
     </div>

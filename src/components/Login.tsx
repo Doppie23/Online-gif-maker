@@ -5,6 +5,7 @@ import { pb } from "@/lib/pocketbase";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ClientResponseError } from "pocketbase";
+import useTimeout from "@/utils/useTimeout";
 
 type FormValues = {
   username: string;
@@ -13,6 +14,7 @@ type FormValues = {
 
 function Login() {
   const [errorMessage, setErrorMessage] = useState("");
+  const { timeOutRef } = useTimeout();
   const router = useRouter();
   const { register, handleSubmit } = useForm<FormValues>();
 
@@ -31,6 +33,9 @@ function Login() {
           setErrorMessage("Something went wrong. Please try again.");
           console.error(res.message);
         }
+        timeOutRef.current = setTimeout(() => {
+          setErrorMessage("");
+        }, 5000);
       });
   };
 
