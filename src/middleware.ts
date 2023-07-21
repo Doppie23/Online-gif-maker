@@ -4,12 +4,13 @@ import { pb } from "./lib/pocketbase";
 export function middleware(request: NextRequest) {
   pb.authStore.loadFromCookie(request.headers.get("cookie") || "");
   if (!pb.authStore.isValid) {
-    return NextResponse.rewrite(new URL("/login", request.url));
-  } else {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  if (request.nextUrl.pathname === "/") {
     return NextResponse.rewrite(new URL("/editor", request.url));
   }
 }
 
 export const config = {
-  matcher: "/",
+  matcher: ["/", "/editor"],
 };

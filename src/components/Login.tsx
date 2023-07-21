@@ -3,7 +3,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { pb } from "@/lib/pocketbase";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ClientResponseError } from "pocketbase";
 import useTimeout from "@/utils/useTimeout";
 
@@ -24,7 +24,7 @@ function Login() {
       .authWithPassword(data.username, data.password)
       .then((res) => {
         document.cookie = pb.authStore.exportToCookie({ httpOnly: false });
-        router.push("/");
+        router.push("/editor");
       })
       .catch((res: ClientResponseError) => {
         if (res.status === 400) {
@@ -38,6 +38,13 @@ function Login() {
         }, 5000);
       });
   };
+
+  useEffect(() => {
+    if (pb.authStore.isValid) {
+      pb.authStore.clear();
+      fetch("/api/logout", { method: "POST" });
+    }
+  }, []);
 
   return (
     <>
