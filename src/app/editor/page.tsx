@@ -2,7 +2,7 @@
 
 // todo - error handling bij render - in out points - ffmpeg command - titel invoer
 
-import { ChangeEvent, useState, useRef, useEffect } from "react";
+import { ChangeEvent, useState, useRef, useEffect, useMemo } from "react";
 import ReactPlayer from "react-player";
 import FileUpload from "@/components/FileUpload";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
@@ -10,8 +10,8 @@ import { pb } from "@/lib/pocketbase";
 
 const ffmpeg = createFFmpeg({
   log: true,
-  mainName: "main",
-  corePath: "https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js", // todo gebruik multithread hier
+  // @ts-ignore
+  corePath: new URL("/ffmpeg-core.js", document.location).href,
 });
 
 function Page() {
