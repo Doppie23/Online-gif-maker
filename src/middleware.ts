@@ -5,6 +5,8 @@ export function middleware(request: NextRequest) {
   pb.authStore.loadFromCookie(request.headers.get("cookie") || "");
   if (!pb.authStore.isValid) {
     return NextResponse.rewrite(new URL("/login", request.url));
+  } else {
+    return NextResponse.rewrite(new URL("/editor", request.url));
   }
 }
 
