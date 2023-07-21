@@ -1,5 +1,7 @@
 "use client";
 
+// todo - error handling bij render - in out points - ffmpeg command - titel invoer
+
 import { ChangeEvent, useState, useRef, useEffect } from "react";
 import ReactPlayer from "react-player";
 import FileUpload from "@/components/FileUpload";
@@ -14,7 +16,7 @@ const ffmpeg = createFFmpeg({
 
 function Page() {
   const [video, setVideo] = useState<File>();
-  const [maxRange, setMaxRange] = useState(100);
+  const [videoLength, setVideoLength] = useState(100);
   const [isRendering, setIsRendering] = useState(false);
   const [finalVideo, setFinalVideo] = useState<Blob>();
   const videoRef = useRef<any>(null);
@@ -30,7 +32,7 @@ function Page() {
     if (videoRef.current) {
       let duration: number = videoRef.current.getDuration();
       duration = Math.floor(duration);
-      setMaxRange(duration);
+      setVideoLength(duration);
     }
   };
 
@@ -43,7 +45,11 @@ function Page() {
       setIsRendering(true);
       ffmpeg.FS("writeFile", "test.mp4", await fetchFile(video));
 
-      await ffmpeg.run("-i", "test.mp4", "out.mp4");
+      const targetSizeInBytes = 1500000;
+      const targetSizeInBits = targetSizeInBytes * 8;
+      const bitrate = (targetSizeInBits / videoLength).toString();
+
+      await ffmpeg.run("-i", "test.mp4", "-b", bitrate, "out.mp4");
 
       const data = ffmpeg.FS("readFile", "out.mp4");
       const videoBlob = new Blob([data.buffer], { type: "video/mp4" });
