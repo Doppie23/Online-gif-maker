@@ -15,5 +15,12 @@ html {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(-30deg, var(--background-bottom) 0%, var(--background-middle) 35%, var(--background-top) 100%);
+  background: linear-gradient(
+    -30deg,
+    var(--background-bottom) 0%,
+    var(--background-middle) 35%,
+    var(--background-top) 100%
+  );
+  background-size: cover;
+  background-repeat: no-repeat;
 }
