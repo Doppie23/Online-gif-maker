@@ -1,4 +1,4 @@
-export default function formatTime(seconds: number): string {
+export function formatTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = seconds % 60;
@@ -8,4 +8,9 @@ export default function formatTime(seconds: number): string {
   const paddedSeconds = remainingSeconds.toString().padStart(2, "0");
 
   return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+}
+
+export function timeToSeconds(timeFormat: string): number {
+  const [hours, minutes, seconds] = timeFormat.split(":").map(Number);
+  return hours * 3600 + minutes * 60 + seconds;
 }

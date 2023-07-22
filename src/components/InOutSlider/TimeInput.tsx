@@ -6,6 +6,7 @@ import "@/components/InOutSlider/input.css";
 type Props = {
   /** HH:MM:SS */
   time: string;
+  onChange: (time: string) => void;
 };
 
 function isMoreThan60(value: string): boolean {
@@ -18,11 +19,16 @@ function splitTime(time: string) {
   return { hour, minute, second };
 }
 
-function TimeInput({ time }: Props) {
+function TimeInput({ time, onChange }: Props) {
   const { hour, minute, second } = splitTime(time);
   const [hours, setHours] = useState(hour);
   const [minutes, setMinutes] = useState(minute);
   const [seconds, setSeconds] = useState(second);
+
+  const onTimeUpdated = () => {
+    const newTime = `${hours}:${minutes}:${seconds}`;
+    onChange(newTime);
+  };
 
   useEffect(() => {
     const { hour, minute, second } = splitTime(time);
@@ -33,11 +39,19 @@ function TimeInput({ time }: Props) {
 
   return (
     <div className="mt-2 flex flex-row rounded-md bg-gray-800 p-2">
-      <InputElement value={hours} setter={setHours} />
+      <InputElement value={hours} setter={setHours} onUpdate={onTimeUpdated} />
       <div>:</div>
-      <InputElement value={minutes} setter={setMinutes} />
+      <InputElement
+        value={minutes}
+        setter={setMinutes}
+        onUpdate={onTimeUpdated}
+      />
       <div>:</div>
-      <InputElement value={seconds} setter={setSeconds} />
+      <InputElement
+        value={seconds}
+        setter={setSeconds}
+        onUpdate={onTimeUpdated}
+      />
     </div>
   );
 }
@@ -45,9 +59,11 @@ function TimeInput({ time }: Props) {
 function InputElement({
   value,
   setter,
+  onUpdate,
 }: {
   value: string;
   setter: (value: string) => void;
+  onUpdate: () => void;
 }) {
   const updateValue = (value: string, setter: (value: string) => void) => {
     if (isMoreThan60(value)) {
@@ -58,6 +74,7 @@ function InputElement({
       }
       setter(value);
     }
+    onUpdate();
   };
 
   return (

@@ -3,7 +3,7 @@
 import Slider from "rc-slider";
 import "@/components/InOutSlider/slider.css";
 import { useState } from "react";
-import formatTime from "@/utils/formatTime";
+import { formatTime, timeToSeconds } from "@/utils/formatTime";
 import TimeInput from "./TimeInput";
 
 type Props = {
@@ -14,6 +14,19 @@ type Props = {
 
 function InOutSlider({ maxValue, onChange }: Props) {
   const [value, setValue] = useState([0, maxValue]);
+
+  const updateSliderValue = (time: string, valueToOverwrite: 0 | 1) => {
+    const seconds = timeToSeconds(time);
+    setValue((prev) => {
+      if (valueToOverwrite === 0) {
+        onChange(seconds, prev[1]);
+        return [seconds, prev[1]];
+      } else {
+        onChange(prev[0], seconds);
+        return [prev[0], seconds];
+      }
+    });
+  };
 
   return (
     <div>
@@ -34,8 +47,14 @@ function InOutSlider({ maxValue, onChange }: Props) {
         }}
       />
       <div className="flex flex-row justify-between">
-        <TimeInput time={formatTime(value[0])} />
-        <TimeInput time={formatTime(value[1])} />
+        <TimeInput
+          time={formatTime(value[0])}
+          onChange={(time) => updateSliderValue(time, 0)}
+        />
+        <TimeInput
+          time={formatTime(value[1])}
+          onChange={(time) => updateSliderValue(time, 1)}
+        />
       </div>
     </div>
   );
