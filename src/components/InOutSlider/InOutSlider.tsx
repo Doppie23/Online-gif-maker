@@ -1,9 +1,10 @@
 "use client";
 
 import Slider from "rc-slider";
-import "@/components/slider.css";
+import "@/components/InOutSlider/slider.css";
 import { useState } from "react";
 import formatTime from "@/utils/formatTime";
+import TimeInput from "./TimeInput";
 
 type Props = {
   /** Lengte van clip in seconden */
@@ -20,6 +21,7 @@ function InOutSlider({ maxValue, onChange }: Props) {
         range
         allowCross={false}
         value={value}
+        max={maxValue}
         onChange={(newValue) => {
           if (newValue instanceof Array) {
             setValue(newValue);
@@ -32,12 +34,8 @@ function InOutSlider({ maxValue, onChange }: Props) {
         }}
       />
       <div className="flex flex-row justify-between">
-        <div className="mt-2 rounded-md bg-gray-800 p-2">
-          {formatTime(value[0])}
-        </div>
-        <div className="mt-2 rounded-md bg-gray-800 p-2">
-          {formatTime(value[1])}
-        </div>
+        <TimeInput time={formatTime(value[0])} />
+        <TimeInput time={formatTime(value[1])} />
       </div>
     </div>
   );
