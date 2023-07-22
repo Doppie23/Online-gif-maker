@@ -13,7 +13,7 @@ import FinalVideo from "@/components/FinalVideo";
 import ProgressBar from "@/components/ProgressBar";
 
 const ffmpeg = createFFmpeg({
-  log: false,
+  log: true,
   // @ts-ignore
   corePath: new URL("/ffmpeg-core.js", document.location).href,
 });
@@ -29,7 +29,7 @@ function Page() {
   const [videoTitle, setVideoTitle] = useState("");
   const [videoType, setVideoType] = useState<VideoType>("video");
   const [video, setVideo] = useState<File>();
-  const [videoLength, setVideoLength] = useState(100);
+  const [videoLength, setVideoLength] = useState(100); // in seconden
   const [isRendering, setIsRendering] = useState(false);
   const [progress, setProgress] = useState(0);
   const [finalVideo, setFinalVideo] = useState<Blob>();
@@ -46,6 +46,7 @@ function Page() {
     if (videoRef.current) {
       let duration: number = videoRef.current.getDuration();
       duration = Math.floor(duration);
+      console.log(duration);
       setVideoLength(duration);
     }
   };
@@ -65,9 +66,21 @@ function Page() {
 
       const targetSizeInBytes = 1500000;
       const targetSizeInBits = targetSizeInBytes * 8;
-      const bitrate = (targetSizeInBits / videoLength).toString();
+      const bitrate = (targetSizeInBits / videoLength).toString(); // todo video lenght iin seconden van in naar out point
 
-      await ffmpeg.run("-i", "test.mp4", "-b", bitrate, "out.mp4");
+      await ffmpeg.run(
+        "-ss",
+        "00:00:07",
+        "-to",
+        "00:00:10",
+        "-i",
+        "test.mp4",
+        "-b",
+        bitrate,
+        "-c",
+        "copy",
+        "out.mp4",
+      );
 
       const data = ffmpeg.FS("readFile", "out.mp4");
       const videoBlob = new Blob([data.buffer], { type: "video/mp4" });
