@@ -1,6 +1,6 @@
 "use client";
 
-// todo - error handling met error page - in out points
+// todo - in out points
 
 import { ChangeEvent, useState, useRef, useEffect } from "react";
 import Switch from "@/components/Switch";
