@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import "@/components/InOutSlider/input.css";
+import { timeToSeconds, formatTime } from "@/utils/formatTime";
 
 type Props = {
   /** HH:MM:SS */
   time: string;
   onChange: (time: string) => void;
+  maxValue: number;
 };
 
 function isMoreThan60(value: string): boolean {
@@ -19,14 +21,18 @@ function splitTime(time: string) {
   return { hour, minute, second };
 }
 
-function TimeInput({ time, onChange }: Props) {
+function TimeInput({ time, onChange, maxValue }: Props) {
   const { hour, minute, second } = splitTime(time);
   const [hours, setHours] = useState(hour);
   const [minutes, setMinutes] = useState(minute);
   const [seconds, setSeconds] = useState(second);
 
   const onTimeUpdated = () => {
-    const newTime = `${hours}:${minutes}:${seconds}`;
+    let newTime = `${hours}:${minutes}:${seconds}`;
+    const TimeInSeconds = timeToSeconds(newTime);
+    if (TimeInSeconds > maxValue) {
+      newTime = formatTime(maxValue);
+    }
     onChange(newTime);
   };
 

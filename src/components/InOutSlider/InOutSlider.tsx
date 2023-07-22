@@ -50,10 +50,12 @@ function InOutSlider({ maxValue, onChange }: Props) {
         <TimeInput
           time={formatTime(value[0])}
           onChange={(time) => updateSliderValue(time, 0)}
+          maxValue={value[1]}
         />
         <TimeInput
           time={formatTime(value[1])}
           onChange={(time) => updateSliderValue(time, 1)}
+          maxValue={maxValue}
         />
       </div>
     </div>
