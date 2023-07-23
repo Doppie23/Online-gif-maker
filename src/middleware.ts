@@ -6,9 +6,9 @@ export function middleware(request: NextRequest) {
   if (!pb.authStore.isValid) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (request.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/editor", request.url));
-  }
+  // if (request.nextUrl.pathname === "/") {
+  //   return NextResponse.redirect(new URL("/editor", request.url));
+  // }
 }
 
 export const config = {

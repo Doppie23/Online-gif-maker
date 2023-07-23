@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import "@/components/InOutSlider/input.css";
+import "@/components/PlayerControls/input.css";
 import { timeToSeconds, formatTime } from "@/utils/formatTime";
 
 type Props = {
@@ -10,16 +10,6 @@ type Props = {
   onChange: (time: string) => void;
   maxValue: number;
 };
-
-function isMoreThan60(value: string): boolean {
-  const parsed = parseInt(value);
-  return parsed > 60;
-}
-
-function splitTime(time: string) {
-  const [hour, minute, second] = time.split(":");
-  return { hour, minute, second };
-}
 
 function TimeInput({ time, onChange, maxValue }: Props) {
   const { hour, minute, second } = splitTime(time);
@@ -32,6 +22,9 @@ function TimeInput({ time, onChange, maxValue }: Props) {
     const TimeInSeconds = timeToSeconds(newTime);
     if (TimeInSeconds > maxValue) {
       newTime = formatTime(maxValue);
+    }
+    if (TimeInSeconds < 0) {
+      newTime = "00:00:00";
     }
     onChange(newTime);
   };
@@ -87,11 +80,22 @@ function InputElement({
     <input
       className="w-6 bg-transparent text-center text-white outline-none"
       type="number"
+      min="0"
       value={value}
       onChange={(e) => setter(e.target.value)}
       onBlur={(e) => updateValue(e.target.value, setter)}
     />
   );
+}
+
+function isMoreThan60(value: string): boolean {
+  const parsed = parseInt(value);
+  return parsed > 60;
+}
+
+function splitTime(time: string) {
+  const [hour, minute, second] = time.split(":");
+  return { hour, minute, second };
 }
 
 export default TimeInput;

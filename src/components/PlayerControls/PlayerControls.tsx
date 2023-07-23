@@ -1,7 +1,7 @@
 "use client";
 
 import Slider from "rc-slider";
-import "@/components/InOutSlider/slider.css";
+import "@/components/PlayerControls/slider.css";
 import { useState } from "react";
 import { formatTime, timeToSeconds } from "@/utils/formatTime";
 import TimeInput from "./TimeInput";
@@ -12,7 +12,7 @@ type Props = {
   onChange: (valueLeft: number, valueRight: number) => void;
 };
 
-function InOutSlider({ maxValue, onChange }: Props) {
+function PlayerControls({ maxValue, onChange }: Props) {
   const [value, setValue] = useState([0, maxValue]);
 
   const updateSliderValue = (time: string, valueToOverwrite: 0 | 1) => {
@@ -62,4 +62,4 @@ function InOutSlider({ maxValue, onChange }: Props) {
   );
 }
 
-export default InOutSlider;
+export default PlayerControls;
