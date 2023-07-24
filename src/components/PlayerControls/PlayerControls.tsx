@@ -5,17 +5,14 @@ import "@/components/PlayerControls/slider.css";
 import { useEffect, useState } from "react";
 import { formatTime, timeToSeconds } from "@/utils/formatTime";
 import TimeInput from "./TimeInput";
-import Image from "next/image";
 
 type Props = {
   /** Lengte van clip in seconden */
   maxValue: number;
   onChange?: (valueLeft: number, valueRight: number) => void;
-  onPlayButtonClicked?: (playing: boolean) => void;
 };
 
-function PlayerControls({ maxValue, onChange, onPlayButtonClicked }: Props) {
-  const [playing, setPlaying] = useState(false);
+function PlayerControls({ maxValue, onChange }: Props) {
   const [value, setValue] = useState([0, maxValue]);
 
   const updateSliderValue = (time: string, valueToOverwrite: 0 | 1) => {
@@ -34,13 +31,6 @@ function PlayerControls({ maxValue, onChange, onPlayButtonClicked }: Props) {
       }
     });
   };
-
-  useEffect(() => {
-    if (onPlayButtonClicked) {
-      onPlayButtonClicked(playing);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing]);
 
   useEffect(() => {
     setValue([0, maxValue]);
@@ -74,28 +64,6 @@ function PlayerControls({ maxValue, onChange, onPlayButtonClicked }: Props) {
           onChange={(time) => updateSliderValue(time, 0)}
           maxValue={value[1]}
         />
-        <div
-          onClick={() => setPlaying(!playing)}
-          className="flex cursor-pointer select-none items-center justify-center rounded-md bg-indigo-600 px-3 py-2"
-        >
-          {playing ? (
-            <Image
-              src="/pause.svg"
-              width={20}
-              height={20}
-              alt="pause button"
-              className="invert"
-            />
-          ) : (
-            <Image
-              src="/play.svg"
-              width={20}
-              height={20}
-              alt="play button"
-              className="invert"
-            />
-          )}
-        </div>
         <TimeInput
           time={formatTime(value[1])}
           onChange={(time) => updateSliderValue(time, 1)}
