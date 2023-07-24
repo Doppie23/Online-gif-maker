@@ -4,7 +4,13 @@ import PlayerControls from "@/components/PlayerControls/PlayerControls";
 import { useState, useRef } from "react";
 import ReactPlayer from "react-player";
 
-export default function PlayerEditor({ src }: { src: string }) {
+export default function PlayerEditor({
+  src,
+  onInOutChange,
+}: {
+  src: string;
+  onInOutChange?: (L: number, R: number) => void;
+}) {
   const [inOutPoints, setInOutPoints] = useState([0, Infinity]);
   const [videoLength, setVideoLength] = useState(0); // in seconden
   const videoRef = useRef<ReactPlayer>(null);
@@ -26,7 +32,7 @@ export default function PlayerEditor({ src }: { src: string }) {
   };
 
   return (
-    <div className="m-auto w-1/2">
+    <>
       <div className="space-y-2">
         <ReactPlayer
           url={src}
@@ -47,12 +53,13 @@ export default function PlayerEditor({ src }: { src: string }) {
           <PlayerControls
             maxValue={videoLength}
             onChange={(l, r) => {
-              console.log(l, r);
+              videoRef.current?.seekTo(l);
               setInOutPoints([l, r]);
+              if (onInOutChange) onInOutChange(l, r);
             }}
           />
         </div>
       </div>
-    </div>
+    </>
   );
 }
