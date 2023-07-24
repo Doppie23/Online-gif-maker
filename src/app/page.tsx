@@ -1,10 +1,7 @@
 "use client";
 
-// todo - in out points
-
 import { ChangeEvent, useState, useRef, useEffect } from "react";
 import Switch from "@/components/Switch";
-import { set, useForm } from "react-hook-form";
 import FileUpload from "@/components/FileUpload";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import FinalVideo from "@/components/FinalVideo";
