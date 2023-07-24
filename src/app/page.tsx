@@ -3,19 +3,22 @@
 import { ChangeEvent, useState, useRef, useEffect } from "react";
 import Switch from "@/components/Switch";
 import FileUpload from "@/components/FileUpload";
-import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
+import { FFmpeg, createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import FinalVideo from "@/components/FinalVideo";
 import ProgressBar from "@/components/ProgressBar";
 import PlayerEditor from "@/components/PlayerEditor";
 import { formatTime } from "@/utils/formatTime";
 
-const ffmpeg = createFFmpeg({
-  log: false,
-  // @ts-ignore
-  corePath: new URL("/ffmpeg-core.js", document.location).href,
-});
-
 export type VideoType = "gif" | "video";
+
+let ffmpeg: FFmpeg;
+try {
+  ffmpeg = createFFmpeg({
+    log: false,
+    // @ts-ignore
+    corePath: new URL("/ffmpeg-core.js", document.location).href,
+  });
+} catch (error) {}
 
 function Page() {
   const videoTypeRef = useRef<VideoType>("video");
