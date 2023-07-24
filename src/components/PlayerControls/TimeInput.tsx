@@ -37,7 +37,7 @@ function TimeInput({ time, onChange, maxValue }: Props) {
   }, [time]);
 
   return (
-    <div className="mt-2 flex flex-row rounded-md bg-gray-800 p-2">
+    <div className="flex flex-row rounded-md bg-gray-800 p-2">
       <InputElement value={hours} setter={setHours} onUpdate={onTimeUpdated} />
       <div>:</div>
       <InputElement
