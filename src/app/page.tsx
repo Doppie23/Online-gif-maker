@@ -10,7 +10,7 @@ import PlayerEditor from "@/components/PlayerEditor";
 import { formatTime } from "@/utils/formatTime";
 
 const ffmpeg = createFFmpeg({
-  log: true,
+  log: false,
   // @ts-ignore
   corePath: new URL("/ffmpeg-core.js", document.location).href,
 });
