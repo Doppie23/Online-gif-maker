@@ -4,12 +4,13 @@
 
 import { ChangeEvent, useState, useRef, useEffect } from "react";
 import Switch from "@/components/Switch";
-import { useForm, SubmitHandler } from "react-hook-form";
-import ReactPlayer from "react-player";
+import { set, useForm } from "react-hook-form";
 import FileUpload from "@/components/FileUpload";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 import FinalVideo from "@/components/FinalVideo";
 import ProgressBar from "@/components/ProgressBar";
+import PlayerEditor from "@/components/PlayerEditor";
+import { formatTime } from "@/utils/formatTime";
 
 const ffmpeg = createFFmpeg({
   log: true,
@@ -17,36 +18,21 @@ const ffmpeg = createFFmpeg({
   corePath: new URL("/ffmpeg-core.js", document.location).href,
 });
 
-type FormValues = {
-  title: string;
-};
-
 export type VideoType = "gif" | "video";
 
 function Page() {
-  const { register, handleSubmit } = useForm<FormValues>();
-  const [videoTitle, setVideoTitle] = useState("");
-  const [videoType, setVideoType] = useState<VideoType>("video");
+  const videoTypeRef = useRef<VideoType>("video");
+  const inOutPointsRef = useRef<[number, number]>();
+  const videoLengthRef = useRef<number>(0);
   const [video, setVideo] = useState<File>();
-  const [videoLength, setVideoLength] = useState(100); // in seconden
   const [isRendering, setIsRendering] = useState(false);
   const [progress, setProgress] = useState(0);
   const [finalVideo, setFinalVideo] = useState<Blob>();
-  const videoRef = useRef<any>(null);
 
   const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const file = e.target.files[0];
       setVideo(file);
-    }
-  };
-
-  const onPlayerReady = () => {
-    if (videoRef.current) {
-      let duration: number = videoRef.current.getDuration();
-      duration = Math.floor(duration);
-      console.log(duration);
-      setVideoLength(duration);
     }
   };
 
@@ -63,34 +49,58 @@ function Page() {
 
       ffmpeg.FS("writeFile", "test.mp4", await fetchFile(video));
 
-      const targetSizeInBytes = 1500000;
+      const targetSizeInBytes = 5000000;
       const targetSizeInBits = targetSizeInBytes * 8;
-      const bitrate = (targetSizeInBits / videoLength).toString(); // todo video lenght iin seconden van in naar out point
+      let videoLength: number;
+      if (inOutPointsRef.current) {
+        videoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
+      } else {
+        videoLength = videoLengthRef.current;
+      }
+      const bitrate = (targetSizeInBits / videoLength).toString();
 
-      await ffmpeg.run(
-        "-ss",
-        "00:00:07",
-        "-to",
-        "00:00:10",
-        "-i",
-        "test.mp4",
-        "-b",
-        bitrate,
-        "-c",
-        "copy",
-        "out.mp4",
-      );
+      let ffmpegCommand: string[];
 
-      const data = ffmpeg.FS("readFile", "out.mp4");
-      const videoBlob = new Blob([data.buffer], { type: "video/mp4" });
+      if (inOutPointsRef.current) {
+        const inTime = formatTime(inOutPointsRef.current[0]);
+        const outTime = formatTime(inOutPointsRef.current[1]);
+        ffmpegCommand = [
+          "-ss",
+          inTime,
+          "-to",
+          outTime,
+          "-i",
+          "test.mp4",
+          "-b",
+          bitrate,
+        ];
+      } else {
+        ffmpegCommand = ["-i", "test.mp4", "-b", bitrate];
+      }
+
+      if (videoTypeRef.current === "video") {
+        ffmpegCommand.push("out.mp4");
+      } else {
+        ffmpegCommand.push("-vf", "fps=15", "-f", "gif", "out.gif");
+      }
+
+      await ffmpeg.run(...ffmpegCommand);
+
+      let videoBlob: Blob;
+      if (videoTypeRef.current === "video") {
+        const data = ffmpeg.FS("readFile", "out.mp4");
+        videoBlob = new Blob([data.buffer], { type: "video/mp4" });
+      } else {
+        const data = ffmpeg.FS("readFile", "out.gif");
+        videoBlob = new Blob([data.buffer], { type: "image/gif" });
+      }
 
       setFinalVideo(videoBlob);
       setIsRendering(false);
     }
   };
 
-  const onRenderClicked: SubmitHandler<FormValues> = (data) => {
-    setVideoTitle(data.title);
+  const onRenderClicked = () => {
     renderVideo();
   };
 
@@ -103,50 +113,44 @@ function Page() {
   return (
     <>
       {!isRendering && !finalVideo ? (
-        <form
-          onSubmit={handleSubmit(onRenderClicked)}
-          className="mx-auto mt-20 max-w-md space-y-3 sm:mt-0 sm:flex sm:h-screen sm:flex-col sm:items-center sm:justify-center"
-        >
-          <FileUpload onChange={handleFileInput} />
-          {video && (
+        <div className="mx-auto  mt-0 flex h-screen max-w-md flex-col items-center justify-center space-y-3">
+          {!video ? (
+            <FileUpload onChange={handleFileInput} />
+          ) : (
             <>
-              <ReactPlayer
-                width={""}
-                height={""}
-                url={URL.createObjectURL(video)}
-                controls
-                ref={videoRef}
-                onReady={onPlayerReady}
+              <button
+                onClick={() => setVideo(undefined)}
+                className="absolute left-0 top-0 m-6 flex justify-center rounded-md bg-gray-800 px-6 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-700"
+              >
+                Back
+              </button>
+              <PlayerEditor
+                src={URL.createObjectURL(video)}
+                onInOutChange={(l, r) => (inOutPointsRef.current = [l, r])}
+                getLengthOnPlayerReady={(length) =>
+                  (videoLengthRef.current = length)
+                }
               />
-              <div className="w-3/4">
-                <input
-                  {...register("title")}
-                  placeholder="Title"
-                  type="text"
-                  required
-                  className="block w-full rounded-md border-0 bg-gray-800 px-2 py-1.5 text-white shadow-sm outline-none ring-1 ring-inset ring-gray-700  placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
               <div className="w-3/5">
                 <Switch
                   onChange={(activeButton) => {
                     if (activeButton === "left") {
-                      setVideoType("video");
+                      videoTypeRef.current = "video";
                     } else {
-                      setVideoType("gif");
+                      videoTypeRef.current = "gif";
                     }
                   }}
                 />
               </div>
               <button
-                type="submit"
+                onClick={onRenderClicked}
                 className="flex justify-center rounded-md bg-indigo-600 px-6 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Render
               </button>
             </>
           )}
-        </form>
+        </div>
       ) : !finalVideo ? (
         <div className="flex h-screen items-center justify-center">
           <div className="w-3/5">
@@ -156,8 +160,7 @@ function Page() {
       ) : (
         <FinalVideo
           finalVideo={finalVideo}
-          videoTitle={videoTitle}
-          videoType={videoType}
+          videoType={videoTypeRef.current}
           onDeleteClicked={() => document.location.reload()}
         />
       )}

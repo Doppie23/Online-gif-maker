@@ -7,9 +7,11 @@ import ReactPlayer from "react-player";
 export default function PlayerEditor({
   src,
   onInOutChange,
+  getLengthOnPlayerReady,
 }: {
   src: string;
   onInOutChange?: (L: number, R: number) => void;
+  getLengthOnPlayerReady?: (videoLength: number) => void;
 }) {
   const [inOutPoints, setInOutPoints] = useState([0, Infinity]);
   const [videoLength, setVideoLength] = useState(0); // in seconden
@@ -20,6 +22,7 @@ export default function PlayerEditor({
       let duration: number = videoRef.current.getDuration();
       duration = Math.floor(duration);
       setVideoLength(duration);
+      if (getLengthOnPlayerReady) getLengthOnPlayerReady(duration);
     }
   };
 
