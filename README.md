@@ -1,10 +1,9 @@
 # Eigen video upload service
 
-Een soort kopie van gfycat
+Een plek om een mp4 te uploaden, bij te snijden en dan te renderen naar een mp4 of gif.
 
 ## technlogieën
 
 - Next js
-- PocketBase
 - Tailwind
 - TypeScript
