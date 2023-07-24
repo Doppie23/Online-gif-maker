@@ -4,9 +4,7 @@
 
 :root {
   --foreground-rgb: 256, 256, 256;
-  --background-top: #111827;
-  --background-middle: #151f34;
-  --background-bottom: #28256b; /* 4F46E5 */
+  --background: #151f34;
 }
 
 html {
@@ -15,12 +13,5 @@ html {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    -30deg,
-    var(--background-bottom) 0%,
-    var(--background-middle) 35%,
-    var(--background-top) 100%
-  );
-  background-size: cover;
-  background-repeat: no-repeat;
+  background-color: var(--background);
 }

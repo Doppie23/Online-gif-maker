@@ -120,7 +120,7 @@ function Page() {
             <>
               <button
                 onClick={() => setVideo(undefined)}
-                className="absolute left-0 top-0 m-6 flex justify-center rounded-md bg-gray-800 px-6 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-700"
+                className="absolute left-0 top-0 z-10 m-6 flex justify-center rounded-md bg-gray-800 px-6 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-700"
               >
                 Back
               </button>
