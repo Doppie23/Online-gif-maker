@@ -8,6 +8,7 @@ import FinalVideo from "@/components/FinalVideo";
 import ProgressBar from "@/components/ProgressBar";
 import PlayerEditor from "@/components/PlayerEditor";
 import { formatTime } from "@/utils/formatTime";
+import { useRouter } from "next/navigation";
 
 export type VideoType = "gif" | "video";
 
@@ -29,11 +30,23 @@ function Page() {
   const [progress, setProgress] = useState(0);
   const [finalVideo, setFinalVideo] = useState<Blob>();
 
+  const router = useRouter();
+
   const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const file = e.target.files[0];
       setVideo(file);
     }
+  };
+
+  const resetAllState = () => {
+    videoTypeRef.current = "video";
+    inOutPointsRef.current = undefined;
+    videoLengthRef.current = 0;
+    setVideo(undefined);
+    setIsRendering(false);
+    setProgress(0);
+    setFinalVideo(undefined);
   };
 
   const loadFFmpeg = async () => {
@@ -159,7 +172,9 @@ function Page() {
         await renderGif();
       }
     } catch {
-      throw new Error("Something went wrong...");
+      ffmpeg.exit();
+      router.push("/error"); // dit moet zo want next vangt de error hieronder niet, waarom geen idee
+      throw new Error("Something went wrong when rendering the video.");
     }
     setIsRendering(false);
   };
@@ -225,7 +240,7 @@ function Page() {
         <FinalVideo
           finalVideo={finalVideo}
           videoType={videoTypeRef.current}
-          onDeleteClicked={() => document.location.reload()}
+          onDeleteClicked={resetAllState}
         />
       )}
     </>
