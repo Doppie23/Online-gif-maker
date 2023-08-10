@@ -40,29 +40,14 @@ function Page() {
     await ffmpeg.load();
   };
 
-  const renderVideo = async () => {
-    if (!video) return;
-    ffmpeg.setProgress(({ ratio }) => {
-      // bug met ratio hier als video verkort is, daarom het stuk hieronder ipv gelijk ratio gebruiken
+  const _renderMp4 = async (
+    inputVideo: File,
+    targetBitrateInBytes: number = 5000000,
+    outputName: string = "out.mp4",
+  ) => {
+    ffmpeg.FS("writeFile", "test.mp4", await fetchFile(inputVideo));
 
-      let cutVideoLength = videoLengthRef.current;
-      if (inOutPointsRef.current) {
-        cutVideoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
-      }
-      const videoLengthPercentageOfWholeVideo =
-        cutVideoLength / videoLengthRef.current;
-
-      let progress = Math.floor(
-        (ratio / videoLengthPercentageOfWholeVideo) * 100,
-      );
-      if (progress > 100) progress = 100;
-      setProgress(progress);
-    });
-
-    ffmpeg.FS("writeFile", "test.mp4", await fetchFile(video));
-
-    const targetSizeInBytes = 5000000;
-    const targetSizeInBits = targetSizeInBytes * 8;
+    const targetSizeInBits = targetBitrateInBytes * 8;
     let videoLength: number;
     if (inOutPointsRef.current) {
       videoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
@@ -90,9 +75,31 @@ function Page() {
       ffmpegCommand = ["-i", "test.mp4", "-b", bitrate];
     }
 
-    ffmpegCommand.push("out.mp4");
+    ffmpegCommand.push(outputName);
 
     await ffmpeg.run(...ffmpegCommand);
+  };
+
+  const renderVideo = async () => {
+    if (!video) return;
+    ffmpeg.setProgress(({ ratio }) => {
+      // bug met ratio hier als video verkort is, daarom het stuk hieronder ipv gelijk ratio gebruiken
+
+      let cutVideoLength = videoLengthRef.current;
+      if (inOutPointsRef.current) {
+        cutVideoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
+      }
+      const videoLengthPercentageOfWholeVideo =
+        cutVideoLength / videoLengthRef.current;
+
+      let progress = Math.floor(
+        (ratio / videoLengthPercentageOfWholeVideo) * 100,
+      );
+      if (progress > 100) progress = 100;
+      setProgress(progress);
+    });
+
+    await _renderMp4(video);
 
     const data = ffmpeg.FS("readFile", "out.mp4");
     const videoBlob = new Blob([data.buffer], { type: "video/mp4" });
@@ -126,45 +133,13 @@ function Page() {
       setProgress(progress);
     });
 
-    ffmpeg.FS("writeFile", "test.mp4", await fetchFile(video));
+    await _renderMp4(video); // eerst een mp4 run voor een kleiner bestand
 
-    const targetSizeInBytes = 5000000;
-    const targetSizeInBits = targetSizeInBytes * 8;
-    let videoLength: number;
-    if (inOutPointsRef.current) {
-      videoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
-    } else {
-      videoLength = videoLengthRef.current;
-    }
-    const bitrate = (targetSizeInBits / videoLength).toString();
-
-    let ffmpegCommand: string[];
-
-    if (inOutPointsRef.current) {
-      const inTime = formatTime(inOutPointsRef.current[0]);
-      const outTime = formatTime(inOutPointsRef.current[1]);
-      ffmpegCommand = [
-        "-ss",
-        inTime,
-        "-to",
-        outTime,
-        "-i",
-        "test.mp4",
-        "-b",
-        bitrate,
-      ];
-    } else {
-      ffmpegCommand = ["-i", "test.mp4", "-b", bitrate];
-    }
-
-    ffmpegCommand.push("out.mp4");
-    await ffmpeg.run(...ffmpegCommand); // eerst een mp4 run voor de bitrate
-
-    ffmpegCommand = [
+    const ffmpegCommand = [
       "-i",
       "out.mp4",
       "-vf",
-      "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
+      "fps=15,scale=720:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
       "out.gif",
     ];
     await ffmpeg.run(...ffmpegCommand);

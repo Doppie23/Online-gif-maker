@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Online Gif Maker",
-  description: "Online app to create a gif from a video.",
+  title: "Online Video Editor",
+  description: "Online app to trim video's.",
 };
 
 export default function RootLayout({

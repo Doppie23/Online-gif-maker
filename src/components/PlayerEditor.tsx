@@ -59,8 +59,13 @@ export default function PlayerEditor({
           <PlayerControls
             maxValue={videoLength}
             onChange={(l, r) => {
-              setPlaying(false);
-              videoRef.current?.seekTo(l); // moet ook naar rechts seeken als die is aangepast
+              // move player to changed time
+              if (l !== inOutPoints[0]) {
+                videoRef.current?.seekTo(l);
+              } else if (r !== inOutPoints[1]) {
+                videoRef.current?.seekTo(r - 1);
+              }
+
               setInOutPoints([l, r]);
               if (onInOutChange) onInOutChange(l, r);
             }}

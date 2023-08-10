@@ -26,6 +26,7 @@ function Switch({ onChange }: Props) {
         }
         style={{
           color: active === "left" ? "white" : undefined,
+          cursor: active === "left" ? "default" : "pointer",
           border: active === "left" ? `0.2rem solid ${activeColor}` : "none",
         }}
         type="button"
@@ -44,10 +45,11 @@ function Switch({ onChange }: Props) {
         type="button"
         style={{
           color: active === "right" ? "white" : undefined,
+          cursor: active === "right" ? "default" : "pointer",
           border: active === "right" ? `0.2rem solid ${activeColor}` : "none",
         }}
       >
-        Gif
+        Gif <span className="text-xs text-gray-400">(a bit broken)</span>
       </button>
     </div>
   );
