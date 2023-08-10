@@ -46,6 +46,10 @@ function PlayerControls({ maxValue, onChange }: Props) {
           max={maxValue}
           onChange={(newValue) => {
             if (newValue instanceof Array) {
+              if (newValue[0] === newValue[1]) {
+                newValue[0] = newValue[0] - 1;
+              }
+
               setValue(newValue);
             }
           }}
