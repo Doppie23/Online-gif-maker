@@ -14,7 +14,7 @@ export type VideoType = "gif" | "video";
 let ffmpeg: FFmpeg;
 try {
   ffmpeg = createFFmpeg({
-    log: true,
+    log: false,
     // @ts-ignore
     corePath: new URL("/ffmpeg-core.js", document.location).href,
   });
