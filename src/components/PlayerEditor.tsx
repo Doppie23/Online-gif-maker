@@ -13,6 +13,7 @@ export default function PlayerEditor({
   onInOutChange?: (L: number, R: number) => void;
   getLengthOnPlayerReady?: (videoLength: number) => void;
 }) {
+  const [playing, setPlaying] = useState(false);
   const [inOutPoints, setInOutPoints] = useState([0, Infinity]);
   const [videoLength, setVideoLength] = useState(0); // in seconden
   const videoRef = useRef<ReactPlayer>(null);
@@ -29,7 +30,7 @@ export default function PlayerEditor({
   const keepPlayerInsidePoints = (secondsPlayed: number) => {
     if (secondsPlayed < inOutPoints[0]) {
       videoRef.current?.seekTo(inOutPoints[0]);
-    } else if (secondsPlayed > inOutPoints[1]) {
+    } else if (secondsPlayed >= inOutPoints[1]) {
       videoRef.current?.seekTo(inOutPoints[0]);
     }
   };
@@ -44,6 +45,8 @@ export default function PlayerEditor({
           ref={videoRef}
           controls
           loop
+          playing={playing}
+          onPlay={() => setPlaying(true)}
           onReady={onPlayerReady}
           onProgress={(progress) => {
             keepPlayerInsidePoints(progress.playedSeconds);
@@ -56,7 +59,8 @@ export default function PlayerEditor({
           <PlayerControls
             maxValue={videoLength}
             onChange={(l, r) => {
-              videoRef.current?.seekTo(l);
+              setPlaying(false);
+              videoRef.current?.seekTo(l); // moet ook naar rechts seeken als die is aangepast
               setInOutPoints([l, r]);
               if (onInOutChange) onInOutChange(l, r);
             }}

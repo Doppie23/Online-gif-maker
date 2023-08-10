@@ -14,7 +14,7 @@ export type VideoType = "gif" | "video";
 let ffmpeg: FFmpeg;
 try {
   ffmpeg = createFFmpeg({
-    log: false,
+    log: true,
     // @ts-ignore
     corePath: new URL("/ffmpeg-core.js", document.location).href,
   });
@@ -41,67 +41,156 @@ function Page() {
   };
 
   const renderVideo = async () => {
-    if (video) {
-      setIsRendering(true);
-      ffmpeg.setProgress(({ ratio }) => {
-        setProgress(Math.floor(ratio * 100));
-      });
+    if (!video) return;
+    ffmpeg.setProgress(({ ratio }) => {
+      // bug met ratio hier als video verkort is, daarom het stuk hieronder ipv gelijk ratio gebruiken
 
-      ffmpeg.FS("writeFile", "test.mp4", await fetchFile(video));
-
-      const targetSizeInBytes = 5000000;
-      const targetSizeInBits = targetSizeInBytes * 8;
-      let videoLength: number;
+      let cutVideoLength = videoLengthRef.current;
       if (inOutPointsRef.current) {
-        videoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
-      } else {
-        videoLength = videoLengthRef.current;
+        cutVideoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
       }
-      const bitrate = (targetSizeInBits / videoLength).toString();
+      const videoLengthPercentageOfWholeVideo =
+        cutVideoLength / videoLengthRef.current;
 
-      let ffmpegCommand: string[];
+      let progress = Math.floor(
+        (ratio / videoLengthPercentageOfWholeVideo) * 100,
+      );
+      if (progress > 100) progress = 100;
+      setProgress(progress);
+    });
 
-      if (inOutPointsRef.current) {
-        const inTime = formatTime(inOutPointsRef.current[0]);
-        const outTime = formatTime(inOutPointsRef.current[1]);
-        ffmpegCommand = [
-          "-ss",
-          inTime,
-          "-to",
-          outTime,
-          "-i",
-          "test.mp4",
-          "-b",
-          bitrate,
-        ];
-      } else {
-        ffmpegCommand = ["-i", "test.mp4", "-b", bitrate];
-      }
+    ffmpeg.FS("writeFile", "test.mp4", await fetchFile(video));
 
-      if (videoTypeRef.current === "video") {
-        ffmpegCommand.push("out.mp4");
-      } else {
-        ffmpegCommand.push("-vf", "fps=15", "-f", "gif", "out.gif");
-      }
-
-      await ffmpeg.run(...ffmpegCommand);
-
-      let videoBlob: Blob;
-      if (videoTypeRef.current === "video") {
-        const data = ffmpeg.FS("readFile", "out.mp4");
-        videoBlob = new Blob([data.buffer], { type: "video/mp4" });
-      } else {
-        const data = ffmpeg.FS("readFile", "out.gif");
-        videoBlob = new Blob([data.buffer], { type: "image/gif" });
-      }
-
-      setFinalVideo(videoBlob);
-      setIsRendering(false);
+    const targetSizeInBytes = 5000000;
+    const targetSizeInBits = targetSizeInBytes * 8;
+    let videoLength: number;
+    if (inOutPointsRef.current) {
+      videoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
+    } else {
+      videoLength = videoLengthRef.current;
     }
+    const bitrate = (targetSizeInBits / videoLength).toString();
+
+    let ffmpegCommand: string[];
+
+    if (inOutPointsRef.current) {
+      const inTime = formatTime(inOutPointsRef.current[0]);
+      const outTime = formatTime(inOutPointsRef.current[1]);
+      ffmpegCommand = [
+        "-ss",
+        inTime,
+        "-to",
+        outTime,
+        "-i",
+        "test.mp4",
+        "-b",
+        bitrate,
+      ];
+    } else {
+      ffmpegCommand = ["-i", "test.mp4", "-b", bitrate];
+    }
+
+    ffmpegCommand.push("out.mp4");
+
+    await ffmpeg.run(...ffmpegCommand);
+
+    const data = ffmpeg.FS("readFile", "out.mp4");
+    const videoBlob = new Blob([data.buffer], { type: "video/mp4" });
+
+    setFinalVideo(videoBlob);
+  };
+
+  const renderGif = async () => {
+    if (!video) return;
+    let renderIsInSecondStage = false;
+
+    ffmpeg.setProgress(({ ratio }) => {
+      // bug met ratio hier als video verkort is, daarom het stuk hieronder ipv gelijk ratio gebruiken
+
+      let cutVideoLength = videoLengthRef.current;
+      if (inOutPointsRef.current) {
+        cutVideoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
+      }
+      const videoLengthPercentageOfWholeVideo =
+        cutVideoLength / videoLengthRef.current;
+
+      let progress = Math.floor(
+        (ratio / videoLengthPercentageOfWholeVideo) * 100,
+      );
+      if (progress > 100) progress = 100;
+      if (!renderIsInSecondStage) {
+        progress = Math.floor(progress / 2);
+      } else {
+        progress = Math.floor(progress / 2 + 50);
+      }
+      setProgress(progress);
+    });
+
+    ffmpeg.FS("writeFile", "test.mp4", await fetchFile(video));
+
+    const targetSizeInBytes = 5000000;
+    const targetSizeInBits = targetSizeInBytes * 8;
+    let videoLength: number;
+    if (inOutPointsRef.current) {
+      videoLength = inOutPointsRef.current[1] - inOutPointsRef.current[0];
+    } else {
+      videoLength = videoLengthRef.current;
+    }
+    const bitrate = (targetSizeInBits / videoLength).toString();
+
+    let ffmpegCommand: string[];
+
+    if (inOutPointsRef.current) {
+      const inTime = formatTime(inOutPointsRef.current[0]);
+      const outTime = formatTime(inOutPointsRef.current[1]);
+      ffmpegCommand = [
+        "-ss",
+        inTime,
+        "-to",
+        outTime,
+        "-i",
+        "test.mp4",
+        "-b",
+        bitrate,
+      ];
+    } else {
+      ffmpegCommand = ["-i", "test.mp4", "-b", bitrate];
+    }
+
+    ffmpegCommand.push("out.mp4");
+    await ffmpeg.run(...ffmpegCommand); // eerst een mp4 run voor de bitrate
+
+    ffmpegCommand = [
+      "-i",
+      "out.mp4",
+      "-vf",
+      "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
+      "out.gif",
+    ];
+    await ffmpeg.run(...ffmpegCommand);
+
+    const data = ffmpeg.FS("readFile", "out.gif");
+    const videoBlob = new Blob([data.buffer], { type: "image/gif" });
+
+    setFinalVideo(videoBlob);
+  };
+
+  const startRender = async () => {
+    setIsRendering(true);
+    try {
+      if (videoTypeRef.current === "video") {
+        await renderVideo();
+      } else {
+        await renderGif();
+      }
+    } catch {
+      throw new Error("Something went wrong...");
+    }
+    setIsRendering(false);
   };
 
   const onRenderClicked = () => {
-    renderVideo();
+    startRender();
   };
 
   useEffect(() => {
